@@ -1,6 +1,6 @@
 # coding: utf-8
 
-import numpy as np
+import sys, random, numpy as np
 
 def jogada(tabuleiro, jogador, x, y):
 
@@ -35,6 +35,26 @@ def vitoria(tabuleiro):
 	else:
 		return 0 #empate ou nenhum vencedor ainda
 
+def grafico(tabuleiro):
+
+	x = 0
+	y = 0
+	t = np.zeros([3,3], dtype = np.unicode)
+
+	while(x <= 2):
+		while(y <= 2):
+			if(tabuleiro[x][y] == 0):
+				t[x][y] = '-'
+			if(tabuleiro[x][y] == 1):
+				t[x][y] = 'X'
+			if(tabuleiro[x][y] == -1):
+				t[x][y] = 'O'
+			y = y + 1
+		x = x + 1
+		y = 0
+
+	print (t)
+
 def abreTabuleiro(tabuleiro, jogador):
 
 	x = 0
@@ -58,12 +78,12 @@ def miniMax(tabuleiro, nivel, jogador): #MIN = JOGADOR MAX = COMPUTADOR
 	if(vitoria(tabuleiro) != 0 or nivel == 0): #SE nó é um nó terminal OU profundidade = 0 ENTÃO
 		return vitoria(tabuleiro), tabuleiro   #RETORNE o valor da heurística do nó
 
-	elif(jogador == 1): 					   #SENÃO SE maximizador é FALSE ENTÃO
+	elif(jogador == -1): 					   #SENÃO SE maximizador é FALSE ENTÃO
 		minimo = 99							   #α ← +∞
-		escolhido = None
+		escolhido = tabuleiro
 		filhos = abreTabuleiro(tabuleiro, jogador)
 		for filho in filhos:				   #PARA CADA filho DE nó
-			var, tab = miniMax(filho, nivel-1, -1)
+			var, tab = miniMax(filho, nivel-1, 1)
 			if(var < minimo):
 				minimo = var   				   #α ← min(α, minimax(filho, profundidade-1,true))
 				escolhido = filho
@@ -71,28 +91,53 @@ def miniMax(tabuleiro, nivel, jogador): #MIN = JOGADOR MAX = COMPUTADOR
 
 	else:									   #SENÃO //Maximizador
 		maximo = -99						   #α ← -∞
-		escolhido = None
+		escolhido = tabuleiro
 		filhos = abreTabuleiro(tabuleiro, jogador)
 		for filho in filhos:				   #PARA CADA filho DE nó
-			var, tab = miniMax(filho, nivel-1, 1)   
+			var, tab = miniMax(filho, nivel-1, -1)   
 			if(var > maximo):
 				maximo = var 				   #α ← max(α, minimax(filho, profundidade-1,false))
 				escolhido = filho
 		return maximo, escolhido
 
-def main():
+def main(modo):
 
 	t = np.zeros([3, 3], dtype=int) #Cria o tabuleiro 3x3: 'X' = 1 MAX; 'O' = -1 MIN; 0 = Espaço vazio
-	nivel = 8 #nível máximo da árvore
+	nivel = 8 						#nível máximo da árvore
 
 	while(0 in t): 					#enquanto houver espaço em branco no tabuleiro:
 		
 		#Jogador:
+		
+		print('\nJogador: \n')
 
-		x = int(input("x = "))
-		y = int(input("y = "))
-		t = jogada(t, 1, x, y)
-		print(t)
+		if(modo == '0'):
+			x = int(input("x = "))
+			y = int(input("y = "))
+			while(t[x][y] != 0):
+				print('Jogada inválida!\n')
+				x = int(input("x = "))
+				y = int(input("y = "))
+			t = jogada(t, 1, x, y)
+			
+		#Jogador automático:
+
+		if(modo == '1'):
+			valor, t = miniMax(t.copy(), nivel, 1)
+
+		#Primeira jogada aleatória:
+
+		if(modo == '2'):
+			if(nivel == 8): #Primeira jogada (aleatória)
+				x = random.randint(0, 2)
+				y = random.randint(0, 2)
+				t = jogada(t, 1, x, y)
+			else:
+				valor, t = miniMax(t.copy(), nivel, 1)
+
+		print('\n')
+		grafico(t.copy())
+		nivel = nivel - 1
 
 		#Se jogador já ganhou, não faz jogada do computador
 		if(vitoria(t) == 1):
@@ -101,14 +146,17 @@ def main():
 
 		#Computador:
 
+		print('\nComputador: \n')
+
 		valor, t = miniMax(t.copy(), nivel, -1)
 		nivel = nivel - 1
+		grafico(t.copy())
 
-		print(t)
 		if(vitoria(t) == -1):
 			print('Computador venceu')
 			break
 
+	if(nivel < 0):
+		print('Empate!')
 
-
-main()
+main(sys.argv[1]) #Argumento = Modo de jogo: 0 -> Jogador Manual; 1 -> Jogador Automático; 2 -> Primeira jogada aleatória
