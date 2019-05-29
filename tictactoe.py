@@ -2,18 +2,21 @@
 
 import numpy as np
 
+'''
 class Nodo:
 	def __init__(self, tabuleiro, nivel, pai):
 		self.tab = tabuleiro
 		self.pai = pai #nodo pai
 		self.valor = 0 #valor do MiniMax
 		self.nivel = nivel
+'''
 
 def jogada(tabuleiro, jogador, x, y):
 
 	tabuleiro[x][y] = jogador
 	return tabuleiro
 
+'''
 def abreNodo(arvore, nodo, jogador):
 
 	x = 0
@@ -27,6 +30,25 @@ def abreNodo(arvore, nodo, jogador):
 		x = x + 1
 		y = 0
 
+'''
+
+def abreTabuleiro(tabuleiro, jogador):
+
+	x = 0
+	y = 0
+	filhos = []
+
+	while(x <= 2):
+		while(y <= 2):
+			if(tabuleiro[x][y] == 0):
+				filhos.append(jogada(tabuleiro.copy(), jogador, x, y))
+			y = y + 1
+		x = x + 1
+		y = 0
+
+	return filhos
+
+'''
 def geraArvore(raiz):
 
 	i = 0
@@ -43,7 +65,9 @@ def geraArvore(raiz):
 		i = i + 1
 
 	return arvore
+'''
 
+'''
 def miniMax(arvore):
 
 	i = len(arvore)-1
@@ -61,6 +85,37 @@ def miniMax(arvore):
 		i = i + 1
 
 	return escolhido.tab
+'''
+
+def miniMax(tabuleiro, nivel, jogador): #MIN = JOGADOR MAX = COMPUTADOR
+
+	filhos = []
+
+	if(vitoria(tabuleiro) != 0 or nivel == 0): #SE nó é um nó terminal OU profundidade = 0 ENTÃO
+		return vitoria(tabuleiro), tabuleiro   #RETORNE o valor da heurística do nó
+
+	elif(jogador == 1): 					   #SENÃO SE maximizador é FALSE ENTÃO
+		minimo = 99							   #α ← +∞
+		escolhido = None
+		filhos = abreTabuleiro(tabuleiro, jogador)
+		for filho in filhos:				   #PARA CADA filho DE nó
+			var, tab = miniMax(filho, nivel-1, -1)
+			if(var < minimo):
+				minimo = var   				   #α ← min(α, minimax(filho, profundidade-1,true))
+				escolhido = filho
+		return minimo, escolhido  		   	   #RETORNE α
+
+	else:									   #SENÃO //Maximizador
+		maximo = -99						   #α ← -∞
+		escolhido = None
+		filhos = abreTabuleiro(tabuleiro, jogador)
+		for filho in filhos:				   #PARA CADA filho DE nó
+			var, tab = miniMax(filho, nivel-1, 1)   
+			if(var > maximo):
+				maximo = var 				   #α ← max(α, minimax(filho, profundidade-1,false))
+				escolhido = filho
+		return maximo, escolhido
+
 
 def vitoria(tabuleiro):
 
@@ -93,8 +148,8 @@ def vitoria(tabuleiro):
 def main():
 
 	t = np.zeros([3, 3], dtype=int) #Cria o tabuleiro 3x3: 'X' = 1 MAX; 'O' = -1 MIN; 0 = Espaço vazio
-	a = [] #Árvore
-	nivel = 0
+	#a = [] #Árvore
+	nivel = 8
 
 	#Primeira jogada:
 	while(vitoria(t) == 0): #enquanto nenhum vencer, faz jogada e gera jogada do computador
@@ -110,16 +165,17 @@ def main():
 			break
 
 		#Computador:
-		raiz = Nodo(t.copy(), nivel, None)
-		a = geraArvore(raiz)
-		t = miniMax(a)
+		#raiz = Nodo(t.copy(), nivel, None)
+		#a = geraArvore(raiz)
+		valor, t = miniMax(t.copy(), nivel, -1)
+		nivel = nivel - 1
 		#jogada(t, -1, x, y)
-		nivel = nivel + 2
+		#nivel = nivel + 2
 		print(t)
 		if(vitoria(t) == -1):
 			print('Computador venceu')
 			break
-		a.clear() #limpa a árvore pra construir de novo
+		#a.clear() #limpa a árvore pra construir de novo
 
 
 
