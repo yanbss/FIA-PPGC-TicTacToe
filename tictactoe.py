@@ -156,7 +156,7 @@ def main(modo):
 			print('Computador venceu')
 			break
 
-	if(nivel < 0):
+	if(vitoria(t) == 0):
 		print('Empate!')
 
 main(sys.argv[1]) #Argumento = Modo de jogo: 0 -> Jogador Manual; 1 -> Jogador Automático; 2 -> Primeira jogada aleatória
